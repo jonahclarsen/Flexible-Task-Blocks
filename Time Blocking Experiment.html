@@ -58,8 +58,10 @@ function loadTasks() {
 }
 
 function saveTasks() { localStorage.setItem('tasks', JSON.stringify(tasks)); }
+
 function addTask() {
-  const taskName = document.getElementById('task-name').value, taskDuration = parseFloat(document.getElementById('task-duration').value);
+  const taskName = document.getElementById('task-name').value, 
+        taskDuration = parseFloat(document.getElementById('task-duration').value);
   if (taskName && taskDuration) {
     tasks.push({ name: taskName, duration: taskDuration, startTime: null });
     updateUI();
@@ -67,6 +69,15 @@ function addTask() {
 }
 
 function deleteTask(taskIndex) { tasks.splice(taskIndex, 1); updateUI(); }
+
+function renameTask(taskIndex) {
+  const newName = prompt("Enter new task name", tasks[taskIndex].name);
+  if (newName) {
+    tasks[taskIndex].name = newName;
+    updateUI();
+  }
+}
+
 function updateUI() {
   saveTasks();
   displayTasksWithTime();
@@ -82,7 +93,10 @@ function displayTasksWithTime() {
     taskItem.draggable = true;
     taskItem.setAttribute('data-index', index); 
     taskItem.innerHTML = `<span class='task-item-text'>${task.name} - Duration: ${task.duration} hour(s), Start Time: ${task.startTime || 'TBD'}</span>
-                          <div class='task-buttons'><button onclick='deleteTask(${index})'>Delete</button></div>`;
+                          <div class='task-buttons'>
+                            <button onclick='renameTask(${index})'>Rename</button>
+                            <button onclick='deleteTask(${index})'>Delete</button>
+                          </div>`;
     taskList.appendChild(taskItem);
   });
 }
