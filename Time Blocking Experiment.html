@@ -5,116 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flexible Task Blocks</title>
 <style>
-  .container {
-  width: 67%; /* or any width you prefer */
-  margin: 0 auto; /* this centers the div */
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* this centers the content within the div */
-}
-
-#tasks {
-  width: 100%; /* Adjust as necessary */
-}
-
-.task-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  padding: 10px; /* Adds some spacing inside each task item */
-}
-
-.task-item-name{
-  font-weight: bold;
-}
-
-.task-item-text {
-  flex-grow: 1;
-  margin-right: 10px; /* Ensures a gap between the text and the buttons */
-}
-
-.task-buttons {
-  display: flex;
-  gap: 10px; /* Adds space between buttons */
-  flex-shrink: 0; /* Prevents buttons from shrinking */
-}
-
-  /* Basic reset for padding and margin */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Arial', sans-serif;
-  background-color: #121212; /* Dark background */
-  color: #ffffff; /* Light text */
-  line-height: 1.6;
-  padding: 20px;
-}
-
-h2 {
-  margin-bottom: 1em;
-}
-
-input[type="text"],
-input[type="number"],
-select {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 5px;
-  border: 1px solid #333;
-  background-color: #333;
-  color: #fff;
-}
-
-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  background-color: #0d6efd; /* Bootstrap primary button color */
-  color: #fff;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0b5ed7; /* Slightly darker on hover */
-}
-
-#task-form,
-#start-time-form {
-  margin-bottom: 2em;
-}
-
-#task-list ul {
-  list-style-type: none;
-}
-
-#task-list li {
-  background: #222; /* Slightly lighter dark background for tasks */
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-/* Responsive design adjustments */
-@media (min-width: 768px) {
-  input[type="text"],
-  input[type="number"],
-  select,
-  button {
-    width: auto;
-    display: inline-block;
-    margin-right: 10px;
+  .container { width: 67%; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+  #tasks { width: 100%; }
+  .task-item { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: 10px; }
+  .task-buttons { display: flex; gap: 10px; flex-shrink: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Arial', sans-serif; background-color: #121212; color: #ffffff; line-height: 1.6; padding: 20px; }
+  h2 { margin-bottom: 1em; }
+  input, select { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #333; background-color: #333; color: #fff; }
+  button { padding: 10px 20px; border: none; border-radius: 5px; background-color: #0d6efd; color: #fff; cursor: pointer; }
+  button:hover { background-color: #0b5ed7; }
+  #task-list ul { list-style-type: none; }
+  #task-list li { background: #222; margin-bottom: 10px; padding: 10px; border-radius: 5px; }
+  @media (min-width: 768px) {
+    input, select, button { width: auto; display: inline-block; margin-right: 10px; }
   }
-  
-  button {
-    width: auto;
-  }
-}
 </style>
 </head>
 <body>
@@ -133,10 +38,7 @@ button:hover {
 
   <div id="start-time-form">
     <h2>Enter Starting Task and Time</h2>
-    <select id="start-task">
-      <option value="">Select Task</option>
-      <!-- Options will be populated by JavaScript -->
-    </select>
+    <select id="start-task"><option value="">Select Task</option></select>
     <input type="number" id="start-time" placeholder="Start Time (hour)">
     <button onclick="updateSchedule()">Update Schedule</button>
   </div>
@@ -144,123 +46,31 @@ button:hover {
 
 <script>
 let tasks = [];
+window.onload = () => { loadTasks(); };
 
-// Call this function when the page loads
 function loadTasks() {
-  // Check if there are saved tasks in localStorage
   const savedTasks = localStorage.getItem('tasks');
   if (savedTasks) {
-    // Parse the JSON string back to an array
     tasks = JSON.parse(savedTasks);
-    displayTasksWithTime(); // Update your task display
-    populateTaskSelector(); // Update your task selector
+    displayTasksWithTime();
+    populateTaskSelector();
   }
 }
-// Call this function whenever you need to update localStorage with the latest tasks
-function saveTasks() {
-  // Convert the tasks array to a JSON string
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-}
-window.onload = loadTasks;
 
+function saveTasks() { localStorage.setItem('tasks', JSON.stringify(tasks)); }
 function addTask() {
-  const taskName = document.getElementById('task-name').value;
-  const taskDuration = parseFloat(document.getElementById('task-duration').value);
+  const taskName = document.getElementById('task-name').value, taskDuration = parseFloat(document.getElementById('task-duration').value);
   if (taskName && taskDuration) {
     tasks.push({ name: taskName, duration: taskDuration, startTime: null });
-    displayTasks();
-    document.getElementById('task-name').value = '';
-    document.getElementById('task-duration').value = '';
-  } else {
-    alert('Please enter both a task name and duration.');
-  }
+    updateUI();
+  } else alert('Please enter both a task name and duration.');
 }
 
-function displayTasks() {
-  const taskList = document.getElementById('tasks');
-  taskList.innerHTML = ''; // Clear existing tasks
-  tasks.forEach((task, index) => {
-    const taskItem = document.createElement('li');
-    taskItem.textContent = `${task.name} - Duration: ${task.duration} hour(s)`;
-
-    // Create delete button
-    const deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.onclick = function() { deleteTask(index); }; // Set up the click to call deleteTask
-
-    // Append the delete button to the task item
-    taskItem.appendChild(deleteButton);
-
-    taskList.appendChild(taskItem);
-  });
-}
-
-// Function to delete a task
-function deleteTask(taskIndex) {
-  tasks.splice(taskIndex, 1);
-  saveTasks(); // Save tasks after deleting a task
-  displayTasksWithTime();
-  populateTaskSelector();
-}
-
-function calculateSchedule(startTaskIndex, startTime) {
-  let currentTime = startTime;
-
-  for (let i = startTaskIndex - 1; i >= 0; i--) {
-    currentTime -= tasks[i].duration;
-    tasks[i].startTime = formatTime(currentTime);
-  }
-
-  currentTime = startTime;
-
-  for (let i = startTaskIndex; i < tasks.length; i++) {
-    tasks[i].startTime = formatTime(currentTime);
-    currentTime += tasks[i].duration;
-  }
-}
-
-function formatTime(time) {
-  let hours = Math.floor(time);
-  let minutes = Math.round((time - hours) * 60);
-  let amPm = 'AM';
-
-  if (hours >= 12) {
-    amPm = 'PM';
-    hours -= hours > 12 ? 12 : 0;
-  } else if (hours === 0) {
-    hours = 12;
-  }
-
-  let minutesString = minutes < 10 ? `0${minutes}` : minutes.toString();
-  return `${hours}:${minutesString} ${amPm}`;
-}
-
-// Example function call: calculateSchedule(9); // if the day starts at 9 AM
-
-// Call this function to populate the task selector after adding a new task
-function populateTaskSelector() {
-  const startTaskSelector = document.getElementById('start-task');
-  startTaskSelector.innerHTML = '<option value="">Select Task</option>'; // Reset selector
-  tasks.forEach((task, index) => {
-    const option = document.createElement('option');
-    option.value = index;
-    option.textContent = task.name;
-    startTaskSelector.appendChild(option);
-  });
-}
-
-function updateSchedule() {
-  const startTaskIndex = parseInt(document.getElementById('start-task').value);
-  const startTime = parseFloat(document.getElementById('start-time').value);
-  
-  if (isNaN(startTaskIndex) || isNaN(startTime)) {
-    alert('Please select a task and enter a valid start time.');
-    return;
-  }
-
-  calculateSchedule(startTaskIndex, startTime);
+function deleteTask(taskIndex) { tasks.splice(taskIndex, 1); updateUI(); }
+function updateUI() {
   saveTasks();
   displayTasksWithTime();
+  populateTaskSelector();
 }
 
 function displayTasksWithTime() {
@@ -271,99 +81,75 @@ function displayTasksWithTime() {
     taskItem.className = 'task-item';
     taskItem.draggable = true;
     taskItem.setAttribute('data-index', index); 
-
-    // Event listeners for drag and drop
-    taskItem.addEventListener('dragstart', handleDragStart);
-    taskItem.addEventListener('dragover', handleDragOver);
-    taskItem.addEventListener('dragenter', handleDragEnter);
-    taskItem.addEventListener('dragleave', handleDragLeave);
-    taskItem.addEventListener('drop', handleDrop);
-    taskItem.addEventListener('dragend', handleDragEnd);
-    
-    // Wrap the task text in a span to work with the CSS
-    const taskText = document.createElement('span');
-    taskText.className = 'task-item-text';
-    taskText.textContent = `${task.name} - Duration: ${task.duration} hour(s), Start Time: ${task.startTime || 'TBD'}`;
-    taskItem.appendChild(taskText); // Append task text span to the task item
-
-    // Create a container for the buttons
-    const buttonsContainer = document.createElement('div');
-    buttonsContainer.className = 'task-buttons';
-
-    // Create delete button
-    const deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.onclick = function() { deleteTask(index); };
-    buttonsContainer.appendChild(deleteButton); // Append button to the container
-
-    // Append the button container to the task item
-    taskItem.appendChild(buttonsContainer);
-
-    // Append the task item to the task list
+    taskItem.innerHTML = `<span class='task-item-text'>${task.name} - Duration: ${task.duration} hour(s), Start Time: ${task.startTime || 'TBD'}</span>
+                          <div class='task-buttons'><button onclick='deleteTask(${index})'>Delete</button></div>`;
     taskList.appendChild(taskItem);
   });
 }
 
-function handleDragStart(e) {
+function populateTaskSelector() {
+  const startTaskSelector = document.getElementById('start-task');
+  startTaskSelector.innerHTML = '<option value="">Select Task</option>';
+  tasks.forEach((task, index) => startTaskSelector.innerHTML += `<option value='${index}'>${task.name}</option>`);
+}
+
+function updateSchedule() {
+  const startTaskIndex = parseInt(document.getElementById('start-task').value),
+        startTime = parseFloat(document.getElementById('start-time').value);
+  if (!isNaN(startTaskIndex) && !isNaN(startTime)) {
+    calculateSchedule(startTaskIndex, startTime);
+    updateUI();
+  } else alert('Please select a task and enter a valid start time.');
+}
+
+function calculateSchedule(startTaskIndex, startTime) {
+  let currentTime = startTime;
+  for (let i = startTaskIndex - 1; i >= 0; i--) {
+    currentTime -= tasks[i].duration;
+    tasks[i].startTime = formatTime(currentTime);
+  }
+  currentTime = startTime;
+  for (let i = startTaskIndex; i < tasks.length; i++) {
+    tasks[i].startTime = formatTime(currentTime);
+    currentTime += tasks[i].duration;
+  }
+}
+
+function formatTime(time) {
+  let hours = Math.floor(time), minutes = Math.round((time - hours) * 60), amPm = hours >= 12 ? 'PM' : 'AM';
+  hours -= hours > 12 ? 12 : (hours === 0 ? -12 : 0);
+  return `${hours}:${minutes < 10 ? `0${minutes}` : minutes} ${amPm}`;
+}
+
+function addTaskAndUpdateSelector() { addTask(); updateUI(); }
+
+document.getElementById('tasks').addEventListener('dragstart', (e) => {
   e.dataTransfer.setData('text/plain', e.target.getAttribute('data-index'));
-}
+});
 
-function handleDragOver(e) {
-  e.preventDefault(); // Necessary to allow dropping
-}
+document.getElementById('tasks').addEventListener('dragover', (e) => e.preventDefault());
 
-function handleDragEnter(e) {
-  e.target.classList.add('over');
-}
-
-function handleDragLeave(e) {
-  e.target.classList.remove('over');
-}
-
-function handleDrop(e) {
+document.getElementById('tasks').addEventListener('drop', (e) => {
   e.preventDefault();
-
-  // Find the closest task item to the event target
   let targetElement = e.target;
   while (targetElement && !targetElement.classList.contains('task-item')) {
     targetElement = targetElement.parentElement;
   }
-
-  // If a task item is found
   if (targetElement && targetElement.classList.contains('task-item')) {
-    const originIndex = parseInt(e.dataTransfer.getData('text/plain'));
-    const targetIndex = parseInt(targetElement.getAttribute('data-index'));
-
+    const originIndex = parseInt(e.dataTransfer.getData('text/plain')),
+          targetIndex = parseInt(targetElement.getAttribute('data-index'));
     moveTask(originIndex, targetIndex);
   }
-}
-
-function handleDragEnd(e) {
-  e.target.classList.remove('over');
-}
-
-// Call this function after adding a task to update the selector
-function addTaskAndUpdateSelector() {
-  addTask();
-  saveTasks(); // Save tasks after adding a new task
-  populateTaskSelector();
-  displayTasksWithTime();
-}
+});
 
 function moveTask(originIndex, targetIndex) {
-  // Adjust targetIndex if necessary
-  if (originIndex < targetIndex) {
-    targetIndex--;
-  }
-
   if (originIndex !== targetIndex) {
+    if (originIndex < targetIndex) targetIndex--;
     const itemToMove = tasks.splice(originIndex, 1)[0];
     tasks.splice(targetIndex, 0, itemToMove);
-    saveTasks();
-    displayTasksWithTime();
+    updateUI();
   }
 }
-
 </script>
 
 </body>
