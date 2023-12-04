@@ -46,10 +46,24 @@
 
 <script>
 let tasks = [];
-window.onload = () => { loadTasks(); };
+let mode = 'weekday'; // Default mode. Note there's a bug - once you add #weekend to the end of the URL, you then need to also refresh the page.
+
+window.onload = () => {
+  checkMode();
+  loadTasks();
+};
+
+function checkMode() {
+  mode = window.location.hash === '#weekend' ? 'weekend' : 'weekday';
+  document.title = mode.charAt(0).toUpperCase() + mode.slice(1) + ' Task Blocks'; // Update the page title based on the mode
+  console.log("hash: ");
+  console.log(window.location.hash);
+}
+
 
 function loadTasks() {
-  const savedTasks = localStorage.getItem('tasks');
+  const storageKey = mode === 'weekday' ? 'tasks' : 'weekendTasks';
+  const savedTasks = localStorage.getItem(storageKey);
   if (savedTasks) {
     tasks = JSON.parse(savedTasks);
     displayTasksWithTime();
@@ -57,7 +71,11 @@ function loadTasks() {
   }
 }
 
-function saveTasks() { localStorage.setItem('tasks', JSON.stringify(tasks)); }
+function saveTasks() {
+  const storageKey = mode === 'weekday' ? 'tasks' : 'weekendTasks';
+  localStorage.setItem(storageKey, JSON.stringify(tasks));
+}
+
 
 function addTask() {
   const taskName = document.getElementById('task-name').value, 
