@@ -96,6 +96,38 @@ function renameTask(taskIndex) {
   }
 }
 
+function changeTaskDuration(taskIndex) {
+  const newDuration = parseFloat(prompt("Enter new duration (hours)", tasks[taskIndex].duration));
+  if (!isNaN(newDuration) && newDuration > 0) {
+    tasks[taskIndex].duration = newDuration;
+    recalculateScheduleFromTask(taskIndex);
+    updateUI();
+  } else {
+    alert('Please enter a valid duration.');
+  }
+}
+
+function recalculateScheduleFromTask(startTaskIndex) {
+  if (tasks[startTaskIndex].startTime !== null) {
+    const startTime = parseTime(tasks[startTaskIndex].startTime);
+    calculateSchedule(startTaskIndex, startTime);
+  }
+}
+
+function parseTime(timeString) {
+  const [time, modifier] = timeString.split(' ');
+  let [hours, minutes] = time.split(':').map(num => parseInt(num));
+  if (modifier === 'PM' && hours < 12) hours += 12;
+  if (modifier === 'AM' && hours === 12) hours = 0;
+  return hours + minutes / 60;
+}
+
+function formatTime(time) {
+  let hours = Math.floor(time), minutes = Math.round((time - hours) * 60), amPm = hours >= 12 ? 'PM' : 'AM';
+  hours -= hours > 12 ? 12 : (hours === 0 ? -12 : 0);
+  return `${hours}:${minutes < 10 ? `0${minutes}` : minutes} ${amPm}`;
+}
+
 function updateUI() {
   saveTasks();
   displayTasksWithTime();
@@ -113,6 +145,7 @@ function displayTasksWithTime() {
     taskItem.innerHTML = `<span class='task-item-text'>${task.name} - Duration: ${task.duration} hour(s), Start Time: ${task.startTime || 'TBD'}</span>
                           <div class='task-buttons'>
                             <button onclick='renameTask(${index})'>Rename</button>
+                            <button onclick='changeTaskDuration(${index})'>Change Length</button>
                             <button onclick='deleteTask(${index})'>Delete</button>
                           </div>`;
     taskList.appendChild(taskItem);
@@ -145,12 +178,6 @@ function calculateSchedule(startTaskIndex, startTime) {
     tasks[i].startTime = formatTime(currentTime);
     currentTime += tasks[i].duration;
   }
-}
-
-function formatTime(time) {
-  let hours = Math.floor(time), minutes = Math.round((time - hours) * 60), amPm = hours >= 12 ? 'PM' : 'AM';
-  hours -= hours > 12 ? 12 : (hours === 0 ? -12 : 0);
-  return `${hours}:${minutes < 10 ? `0${minutes}` : minutes} ${amPm}`;
 }
 
 function addTaskAndUpdateSelector() { addTask(); updateUI(); }
